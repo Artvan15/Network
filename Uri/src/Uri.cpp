@@ -1,6 +1,5 @@
 #include "Uri/Uri.hpp"
 
-
 namespace Uri
 {
     struct Uri::Impl
@@ -13,6 +12,10 @@ namespace Uri
             path.clear();
         }
 
+        void set_delimiter(const std::string& str)
+        {
+            delimiter = str;
+        }
 
 
         /**
@@ -29,6 +32,11 @@ namespace Uri
          * "path" of the URI, as a sequence of steps
          */
         std::vector<std::string> path;
+
+        /**
+        * Delimiter for path
+        */
+        std::string delimiter = "/";
     };
 
     Uri::Uri()
@@ -40,35 +48,43 @@ namespace Uri
     {
         pImpl_->clear();
 
+        //Parse path
+        auto parse_path = [this](const std::string& str, size_t start_path_part, const std::string& delimiter)
+        {
+            while (true)
+            {
+                auto end_path_part = str.find(delimiter, start_path_part);
+                pImpl_->path.emplace_back(str, start_path_part, end_path_part - start_path_part);
+                if(end_path_part == std::string::npos)
+                {
+                    break;
+                }
+                start_path_part = end_path_part + pImpl_->delimiter.size();
+            }
+        };
+
+
+        //Parse scheme
         auto scheme_end = str.find(':');
         pImpl_->scheme = str.substr(0, scheme_end);
 
         //for URI with authority
         if(str.substr(scheme_end + 1, 2) == "//")
         {
-            auto end_authority = str.find('/', scheme_end + 3);
+            //Parse host
+            auto end_authority = str.find(pImpl_->delimiter, scheme_end + 3);
             pImpl_->host = str.substr(scheme_end + 3, end_authority - scheme_end - 3);
 
-            while(end_authority != std::string::npos)
+            if(end_authority != std::string::npos)
             {
-                auto end_path_part = str.find('/', end_authority + 1);
-                pImpl_->path.emplace_back(str, end_authority + 1, end_path_part - end_authority - 1);
-                end_authority = end_path_part;
+                parse_path(str, end_authority + pImpl_->delimiter.size(), pImpl_->delimiter);
             }
-
         }
-        //for URI without authority
         else
         {
-            auto start_path_part = scheme_end;
-
-            while(start_path_part != std::string::npos)
-            {
-                auto end_path_part = str.find(':', start_path_part + 1);
-                pImpl_->path.emplace_back(str, start_path_part + 1, end_path_part - start_path_part - 1);
-                start_path_part = end_path_part;
-            }
+            parse_path(str, scheme_end + 1, pImpl_->delimiter);
         }
+        
 
         return true;
     }
@@ -88,5 +104,9 @@ namespace Uri
         return pImpl_->path;
     }
 
+    void Uri::SetDelimiter(const std::string& str)
+    {
+        pImpl_->delimiter = str;
+    }
 
 }

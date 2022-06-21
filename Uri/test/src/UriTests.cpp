@@ -14,7 +14,12 @@ struct UriFixture : public testing::TestWithParam<UriState>
 
     UriFixture()
 	    : uri(std::make_unique<Uri::Uri>())
-    {}
+    {
+        if (!GetParam().GetInitialDelimiter().empty())
+        {
+            uri->SetDelimiter(GetParam().GetInitialDelimiter());
+        }
+    }
 };
 
 
@@ -41,12 +46,28 @@ INSTANTIATE_TEST_SUITE_P(UriWithAuthority, UriFixture,
     testing::Values(
         static_cast<UriState>(
             UriState::create()
-			.set_initial_parsing_string("http://www.example.com/foo/bar")
-			.set_final_scheme("http")
-			.set_final_host("www.example.com")
-			.set_final_path(std::vector<std::string>
-				{"foo",
-				"bar"}))
+			.SetInitialParsingString("http://www.example.com/foo/bar")
+			.SetFinalScheme("http")
+			.SetFinalHost("www.example.com")
+			.SetFinalPath({"foo","bar"})),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("http://www.example.com/foo/bar/")
+            .SetFinalScheme("http")
+            .SetFinalHost("www.example.com")
+            .SetFinalPath({"foo","bar",""})),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("http://www.example.com")
+            .SetFinalScheme("http")
+            .SetFinalHost("www.example.com")
+            .SetFinalPath({})),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("http://www.example.com/")
+            .SetFinalScheme("http")
+            .SetFinalHost("www.example.com")
+            .SetFinalPath({""}))
     )
 );
 
@@ -54,21 +75,37 @@ INSTANTIATE_TEST_SUITE_P(UriWithoutAuthority, UriFixture,
     testing::Values(
         static_cast<UriState>(
             UriState::create()
-            .set_initial_parsing_string("udp:book:fantasy:Hobbyt")
-            .set_final_scheme("udp")
-            .set_final_path(std::vector<std::string>
-						{"book",
-						"fantasy",
-						"Hobbyt"})
+            .SetInitialParsingString("udp:book:fantasy:Hobbyt")
+            .SetInitialDelimiter(":")
+            .SetFinalScheme("udp")
+            .SetFinalPath({"book","fantasy","Hobbyt"})
+            ),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("udp:")
+            .SetFinalScheme("udp")
+            .SetFinalPath({""})
             )
 	)
 );
 
-/*TODO: rename methods to uppercase
+INSTANTIATE_TEST_SUITE_P(UriWithoutAuthorityCustomDelimiter, UriFixture,
+    testing::Values(
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("dpu:film:/thriller:/silence_of_lambs")
+            .SetInitialDelimiter(":/")
+            .SetFinalScheme("dpu")
+            .SetFinalPath({ "film", "thriller", "silence_of_lambs" })
+            )
+    )
+);
+
+
+/*
  *Builder isn't convenient, cause user needs to use manual cast
  *to UriState. Maybe it's simpler to implement just public set_functions
  *with public constructor
- *
  *
 */
 

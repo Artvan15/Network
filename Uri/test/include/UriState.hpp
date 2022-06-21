@@ -19,6 +19,7 @@ public:
     std::string GetFinalScheme() const { return final_scheme_; }
     std::string GetFinalHost() const { return final_host_; }
     std::vector<std::string> GetFinalPath() const { return final_path_; }
+    std::string GetInitialDelimiter() const { return initial_delimiter_; }
 
 private:
     UriState() = default;
@@ -28,6 +29,7 @@ private:
     std::string final_scheme_;
     std::string final_host_;
     std::vector<std::string> final_path_;
+    std::string initial_delimiter_;
 
     friend std::ostream& operator<<(std::ostream& os, const UriState& obj);
 };
@@ -47,13 +49,15 @@ public:
     Builder& operator=(Builder&&) = delete;
     ~Builder() = default;
 
-    Builder& set_initial_parsing_string(std::string&& str);
+    Builder& SetInitialParsingString(std::string&& str);
 
-    Builder& set_final_scheme(std::string&& final_scheme);
+    Builder& SetFinalScheme(std::string&& final_scheme);
 
-    Builder& set_final_host(std::string&& final_host);
+    Builder& SetFinalHost(std::string&& final_host);
 
-    Builder& set_final_path(std::vector<std::string>&& final_path);
+    Builder& SetFinalPath(std::vector<std::string>&& final_path);
+
+    Builder& SetInitialDelimiter(std::string&& initial_delimiter);
 
     operator UriState();
 

@@ -1,26 +1,32 @@
 #include "UriState.hpp"
 
-UriState::Builder& ::UriState::Builder::set_initial_parsing_string(std::string&& str)
+UriState::Builder& ::UriState::Builder::SetInitialParsingString(std::string&& str)
 {
     uri_state_.initial_parsing_string_ = std::move(str);
     return *this;
 }
 
-::UriState::Builder& ::UriState::Builder::set_final_scheme(std::string&& final_scheme)
+::UriState::Builder& ::UriState::Builder::SetFinalScheme(std::string&& final_scheme)
 {
     uri_state_.final_scheme_ = std::move(final_scheme);
     return *this;
 }
 
-::UriState::Builder& ::UriState::Builder::set_final_host(std::string&& final_host)
+::UriState::Builder& ::UriState::Builder::SetFinalHost(std::string&& final_host)
 {
     uri_state_.final_host_ = std::move(final_host);
     return *this;
 }
 
-::UriState::Builder& ::UriState::Builder::set_final_path(std::vector<std::string>&& final_path)
+::UriState::Builder& ::UriState::Builder::SetFinalPath(std::vector<std::string>&& final_path)
 {
     uri_state_.final_path_ = std::move(final_path);
+    return *this;
+}
+
+UriState::Builder& UriState::Builder::SetInitialDelimiter(std::string&& initial_delimiter)
+{
+    uri_state_.initial_delimiter_ = std::move(initial_delimiter);
     return *this;
 }
 
@@ -28,6 +34,8 @@ UriState::Builder& ::UriState::Builder::set_initial_parsing_string(std::string&&
 {
     return std::move(uri_state_);
 }
+
+
 
 
 UriState::Builder UriState::create()

@@ -67,6 +67,14 @@ namespace Uri
          *      as a sequence of steps
          */
         std::vector<std::string> GetPath() const;
+
+        /**
+         * Set delimiter for parsing path
+         *
+         * @param [in] str
+         *      Delimiter to set
+         */
+        void SetDelimiter(const std::string& str);
              
     private:
         struct Impl;
