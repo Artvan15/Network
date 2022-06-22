@@ -3,17 +3,19 @@
 #include <Uri/Uri.hpp>
 #include "UriState.hpp"
 
-/*
- * UriFixture is a class to set up initial state of
- * Uri class. This preset setup will be used in further tests
- * Setup can be made using data from UriState using GetParam() method
- */
-struct UriFixture : public testing::TestWithParam<UriState>
+//UriFixture is a class to set up initial state of Uri class.
+struct UriFixture : public testing::Test
 {
-    std::unique_ptr<Uri::Uri> uri;
+    std::unique_ptr<Uri::Uri> uri = std::make_unique<Uri::Uri>();
+};
 
-    UriFixture()
-	    : uri(std::make_unique<Uri::Uri>())
+/*
+ * UriParam makes set up from GetParam() which is UriState class
+ * It can be used in TEST_P (test with parameters)
+ */
+struct UriParam : public UriFixture, public testing::WithParamInterface<UriState>
+{
+    UriParam()
     {
         if (!GetParam().GetInitialDelimiter().empty())
         {
@@ -27,14 +29,27 @@ struct UriFixture : public testing::TestWithParam<UriState>
  * Actual test, where params from UriFixture class are
  * compared to expected from UriState class 
  */
-TEST_P(UriFixture, UriWithAuthority)
+TEST_P(UriParam, UriTests)
 {
     const auto& uri_state = GetParam();
 
     ASSERT_TRUE(uri->ParseFromString(uri_state.GetInitialParsingString()));
     ASSERT_EQ(uri->GetScheme(), uri_state.GetFinalScheme());
     ASSERT_EQ(uri->GetHost(), uri_state.GetFinalHost());
+    ASSERT_EQ(uri->HasPort(), uri_state.GetHasPort());
+
+    if(uri->HasPort() && uri_state.GetHasPort())
+    {
+        ASSERT_EQ(uri->GetPortNumber(), uri_state.GetPortNumber());
+    }
     ASSERT_EQ(uri->GetPath(), uri_state.GetFinalPath());
+}
+
+TEST_F(UriFixture, UriIsNotValid)
+{
+    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:afv/home"));
+
+    //TODO: add checks for invalid URI
 }
 
 
@@ -42,7 +57,7 @@ TEST_P(UriFixture, UriWithAuthority)
  * Generate parameters of UriState's class that will be used
  * in tests
  */
-INSTANTIATE_TEST_SUITE_P(UriWithAuthority, UriFixture,
+INSTANTIATE_TEST_SUITE_P(UriWithAuthority, UriParam,
     testing::Values(
         static_cast<UriState>(
             UriState::create()
@@ -71,7 +86,28 @@ INSTANTIATE_TEST_SUITE_P(UriWithAuthority, UriFixture,
     )
 );
 
-INSTANTIATE_TEST_SUITE_P(UriWithoutAuthority, UriFixture,
+INSTANTIATE_TEST_SUITE_P(UriWithAuthorityWithPort, UriParam,
+    testing::Values(
+		static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("https://google.com.ua:8080/settings/account")
+            .SetFinalScheme("https")
+            .SetFinalHost("google.com.ua")
+            .SetFinalPortNumber(8080)
+            .SetFinalPath({"settings", "account"})
+            ),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("https://google.com.ua:8000")
+            .SetFinalScheme("https")
+            .SetFinalHost("google.com.ua")
+            .SetFinalPortNumber(8000)
+            .SetFinalPath({ })
+            )
+    )
+);
+
+INSTANTIATE_TEST_SUITE_P(UriWithoutAuthority, UriParam,
     testing::Values(
         static_cast<UriState>(
             UriState::create()
@@ -89,7 +125,7 @@ INSTANTIATE_TEST_SUITE_P(UriWithoutAuthority, UriFixture,
 	)
 );
 
-INSTANTIATE_TEST_SUITE_P(UriWithoutAuthorityCustomDelimiter, UriFixture,
+INSTANTIATE_TEST_SUITE_P(UriWithoutAuthorityCustomDelimiter, UriParam,
     testing::Values(
         static_cast<UriState>(
             UriState::create()

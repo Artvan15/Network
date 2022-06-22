@@ -3,9 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <iostream>
+#include <optional>
 
-/*
+/**
  * This class saves initial params, that are set
  * and final params, that are checked by TEST
  */
@@ -16,20 +18,29 @@ public:
     static Builder create();
 
     std::string GetInitialParsingString() const { return initial_parsing_string_; }
-    std::string GetFinalScheme() const { return final_scheme_; }
-    std::string GetFinalHost() const { return final_host_; }
-    std::vector<std::string> GetFinalPath() const { return final_path_; }
-    std::string GetInitialDelimiter() const { return initial_delimiter_; }
 
+	std::string GetFinalScheme() const { return final_scheme_; }
+
+	std::string GetFinalHost() const { return final_host_; }
+
+	std::vector<std::string> GetFinalPath() const { return final_path_; }
+
+	std::string GetInitialDelimiter() const { return initial_delimiter_; }
+
+	uint16_t GetPortNumber() const { return final_port_.value(); }
+
+    bool GetHasPort() const { return final_port_.has_value(); }
 private:
     UriState() = default;
 
 private:
     std::string initial_parsing_string_;
+
+    std::string initial_delimiter_;
     std::string final_scheme_;
     std::string final_host_;
+    std::optional<uint16_t> final_port_;
     std::vector<std::string> final_path_;
-    std::string initial_delimiter_;
 
     friend std::ostream& operator<<(std::ostream& os, const UriState& obj);
 };
@@ -55,6 +66,10 @@ public:
 
     Builder& SetFinalHost(std::string&& final_host);
 
+    Builder& SetFinalPortNumber(uint16_t final_port);
+
+    Builder& SetFinalHasPort(bool has_port);
+
     Builder& SetFinalPath(std::vector<std::string>&& final_path);
 
     Builder& SetInitialDelimiter(std::string&& initial_delimiter);
@@ -66,3 +81,5 @@ private:
 };
 
 #endif
+
+//TODO: add c++17 parameter to cmake

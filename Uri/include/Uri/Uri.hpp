@@ -68,6 +68,27 @@ namespace Uri
          */
         std::vector<std::string> GetPath() const;
 
+
+        /**
+         * Returns port number parsed from a string
+         *
+         * @return
+         *      The port number
+         *
+         * @note
+         *      The return port number is only valid
+         *      if HasPort() method returns true
+         */
+        uint16_t GetPortNumber() const;
+
+        /**
+         * Indicates whether port exist
+         *
+         * @return
+         *      Flag that port is set
+         */
+        bool HasPort() const;
+
         /**
          * Set delimiter for parsing path
          *
@@ -75,6 +96,7 @@ namespace Uri
          *      Delimiter to set
          */
         void SetDelimiter(const std::string& str);
+
              
     private:
         struct Impl;

@@ -24,6 +24,14 @@ UriState::Builder& ::UriState::Builder::SetInitialParsingString(std::string&& st
     return *this;
 }
 
+
+UriState::Builder& UriState::Builder::SetFinalPortNumber(uint16_t final_port)
+{
+    uri_state_.final_port_ = final_port;
+    return *this;
+}
+
+
 UriState::Builder& UriState::Builder::SetInitialDelimiter(std::string&& initial_delimiter)
 {
     uri_state_.initial_delimiter_ = std::move(initial_delimiter);

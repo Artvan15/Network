@@ -1,4 +1,6 @@
 #include "Uri/Uri.hpp"
+#include <charconv>
+#include <optional>
 
 namespace Uri
 {
@@ -11,12 +13,7 @@ namespace Uri
             host.clear();
             path.clear();
         }
-
-        void set_delimiter(const std::string& str)
-        {
-            delimiter = str;
-        }
-
+        
 
         /**
          * "scheme" of the URI
@@ -29,6 +26,14 @@ namespace Uri
         std::string host;
 
         /**
+         * "port" of the URI
+         *
+         * @note
+         *     set to std::nullopt if port isn't valid
+         */
+        std::optional<uint16_t> port;
+
+        /**
          * "path" of the URI, as a sequence of steps
          */
         std::vector<std::string> path;
@@ -38,6 +43,7 @@ namespace Uri
         */
         std::string delimiter = "/";
     };
+    
 
     Uri::Uri()
         : pImpl_(std::make_unique<Impl>()) {}
@@ -71,24 +77,42 @@ namespace Uri
         //for URI with authority
         if(str.substr(scheme_end + 1, 2) == "//")
         {
-            //Parse host
+            //save authority
             auto end_authority = str.find(pImpl_->delimiter, scheme_end + 3);
-            pImpl_->host = str.substr(scheme_end + 3, end_authority - scheme_end - 3);
+        	pImpl_->host = str.substr(scheme_end + 3, end_authority - scheme_end - 3);
+
+            //if authority has port
+        	if(auto port_delimiter = pImpl_->host.find(':'); port_delimiter != std::string::npos)
+            {
+                std::string str_port = pImpl_->host.substr(port_delimiter + 1);
+                uint16_t port{ 0 };
+                auto result = std::from_chars(str_port.c_str(), str_port.c_str() + str_port.size(), port);
+
+                //check error_code and if all string was parsed
+                if(static_cast<bool>(result.ec) || result.ptr != str_port.c_str() + str_port.size())
+                {
+                    return false;
+                }
+                pImpl_->port = port;
+                pImpl_->host = pImpl_->host.substr(0, port_delimiter);
+            }
+            
 
             if(end_authority != std::string::npos)
             {
                 parse_path(str, end_authority + pImpl_->delimiter.size(), pImpl_->delimiter);
             }
         }
+        //for URI without authority 
         else
         {
             parse_path(str, scheme_end + 1, pImpl_->delimiter);
         }
-        
 
         return true;
     }
-
+    //TODO: separate into smaller functions: ParseScheme(), ParseAuthority(), ParsePath()
+    
     std::string Uri::GetScheme() const
     {
         return pImpl_->scheme;
@@ -98,6 +122,18 @@ namespace Uri
     {
         return pImpl_->host;
     }
+
+    bool Uri::HasPort() const
+    {
+        return pImpl_->port.has_value();
+    }
+
+
+    uint16_t Uri::GetPortNumber() const
+    {
+        return pImpl_->port.value();
+    }
+
 
     std::vector<std::string> Uri::GetPath() const
     {
@@ -110,3 +146,5 @@ namespace Uri
     }
 
 }
+
+//TODO: c++17 parameter in cmake
