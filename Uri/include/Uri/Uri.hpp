@@ -90,6 +90,19 @@ namespace Uri
         bool HasPort() const;
 
         /**
+         * Indicates whether URI is a
+         * relative reference
+         * 
+         * @return
+         *      Indication whether URI is
+         *      a relative reference
+         *
+         * @note
+         *      URI is relative if 
+         */
+        bool IsRelativeReference() const;
+
+        /**
          * Set delimiter for parsing path
          *
          * @param [in] str

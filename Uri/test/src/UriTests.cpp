@@ -9,6 +9,36 @@ struct UriFixture : public testing::Test
     std::unique_ptr<Uri::Uri> uri = std::make_unique<Uri::Uri>();
 };
 
+
+TEST_F(UriFixture, PortIsNotValid)
+{
+    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:afv/home"));
+    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:8080ac/home"));
+    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:65536/home"));
+    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:-5421/home"));
+
+    //TODO: add checks for invalid URI
+}
+
+TEST_F(UriFixture, PathIsRelativeReference)
+{
+    std::vector<std::pair<std::string, std::vector<std::string>>> relative_path{
+            {"home/users/ivan_che", {"home", "users", "ivan_che"}},
+            {"downloads/torrent", {"downloads", "torrent"}},
+			{"home", {"home"}},
+            {"/", {""}}
+    };
+    for(const auto& path : relative_path)
+    {
+        ASSERT_TRUE(uri->ParseFromString(path.first));
+        ASSERT_EQ(uri->IsRelativeReference(), true);
+        ASSERT_EQ(uri->GetPath(), path.second);
+    }
+}
+
+//TODO: relative reference path
+
+
 /*
  * UriParam makes set up from GetParam() which is UriState class
  * It can be used in TEST_P (test with parameters)
@@ -27,7 +57,7 @@ struct UriParam : public UriFixture, public testing::WithParamInterface<UriState
 
 /*
  * Actual test, where params from UriFixture class are
- * compared to expected from UriState class 
+ * compared to expected from UriState class
  */
 TEST_P(UriParam, UriTests)
 {
@@ -38,20 +68,12 @@ TEST_P(UriParam, UriTests)
     ASSERT_EQ(uri->GetHost(), uri_state.GetFinalHost());
     ASSERT_EQ(uri->HasPort(), uri_state.GetHasPort());
 
-    if(uri->HasPort() && uri_state.GetHasPort())
+    if (uri->HasPort() && uri_state.GetHasPort())
     {
         ASSERT_EQ(uri->GetPortNumber(), uri_state.GetPortNumber());
     }
     ASSERT_EQ(uri->GetPath(), uri_state.GetFinalPath());
 }
-
-TEST_F(UriFixture, UriIsNotValid)
-{
-    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:afv/home"));
-
-    //TODO: add checks for invalid URI
-}
-
 
 /*
  * Generate parameters of UriState's class that will be used
