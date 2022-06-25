@@ -2,6 +2,8 @@
 #include <memory>
 #include <Uri/Uri.hpp>
 #include "UriState.hpp"
+#include "ParserException.hpp"
+
 
 //UriFixture is a class to set up initial state of Uri class.
 struct UriFixture : public testing::Test
@@ -12,10 +14,10 @@ struct UriFixture : public testing::Test
 
 TEST_F(UriFixture, PortIsNotValid)
 {
-    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:afv/home"));
-    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:8080ac/home"));
-    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:65536/home"));
-    ASSERT_FALSE(uri->ParseFromString("http://google.com.ua:-5421/home"));
+    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:afv/home"), ParserPortException);
+    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:8080ac/home"), ParserPortException);
+    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:65536/home"), ParserPortException);
+    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:-5421/home"), ParserPortException);
 
     //TODO: add checks for invalid URI
 }
@@ -35,8 +37,6 @@ TEST_F(UriFixture, PathIsRelativeReference)
         ASSERT_EQ(uri->GetPath(), path.second);
     }
 }
-
-//TODO: relative reference path
 
 
 /*
@@ -73,6 +73,7 @@ TEST_P(UriParam, UriTests)
         ASSERT_EQ(uri->GetPortNumber(), uri_state.GetPortNumber());
     }
     ASSERT_EQ(uri->GetPath(), uri_state.GetFinalPath());
+    
 }
 
 /*
@@ -158,7 +159,6 @@ INSTANTIATE_TEST_SUITE_P(UriWithoutAuthorityCustomDelimiter, UriParam,
             )
     )
 );
-
 
 /*
  *Builder isn't convenient, cause user needs to use manual cast

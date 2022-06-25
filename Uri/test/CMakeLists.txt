@@ -8,12 +8,11 @@ set(Sources
 set(Headers
 	include/UriState.hpp)
 
-#Enabling this option will make gtest link the runtimes dynamically too,
-#and match the project in which it is included.
-#set(gtest_force_shared_crt on)
+
 
 #build as exe and locate project into folder "Tests"
 add_executable(${This} ${Sources} ${Headers})
+target_compile_features(${This} PRIVATE cxx_std_17)
 set_target_properties(${This} PROPERTIES
     FOLDER Tests)
 
@@ -24,7 +23,8 @@ target_link_libraries(${This} PUBLIC
     gtest_main
     Uri)
 	
-target_include_directories(${This} PUBLIC include)
+target_include_directories(${This} PUBLIC 
+	include)
 
 #Adds a test to the project to be run by ctest(1)
 #Adds a test called <name>. The test name can contain arbitrary

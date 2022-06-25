@@ -81,5 +81,3 @@ private:
 };
 
 #endif
-
-//TODO: add c++17 parameter to cmake
