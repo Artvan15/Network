@@ -4,10 +4,10 @@
 
 namespace ParserUri
 {
-	class ParseRelativePath : public IParser
+	class ParseRelativeReference : public IParser
 	{
 	public:
-		ParseRelativePath(std::vector<std::string>& path, const std::string& delimiter)
+		ParseRelativeReference(std::vector<std::string>& path, const std::string& delimiter)
 			: delimiter_(delimiter), parser_path_(path, delimiter) {}
 
 		size_t Parse(const std::string& str, size_t start) override;

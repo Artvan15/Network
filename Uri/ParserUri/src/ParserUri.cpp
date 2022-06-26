@@ -7,20 +7,15 @@ namespace ParserUri
     size_t ParserScheme::Parse(const std::string& str, size_t start)
     {
         auto scheme_end = str.find(':', start);
-        if (scheme_end != std::string::npos)
-        {
-            scheme_ = str.substr(0, scheme_end);
-        }
+        scheme_ = str.substr(start, scheme_end);
         return scheme_end;
     }
 
     size_t ParserHost::Parse(const std::string& str, size_t start)
     {
-        auto end_authority = str.find(':', start);
-        if (end_authority == std::string::npos)
-        {
-            end_authority = str.find(delimiter_, start);
-        }
+        //find on what host ends (port, path(delimiter), query, fragment 
+        auto end_authority = std::min(str.find_first_of(":#?", start),
+            str.find(delimiter_, start));
         host_ = str.substr(start, end_authority - start);
         return end_authority;
     }
@@ -28,6 +23,10 @@ namespace ParserUri
     size_t ParserPort::Parse(const std::string& str, size_t start)
     {
         auto end_port = str.find(delimiter_, start);
+        if(end_port == std::string::npos)
+        {
+            end_port = str.find_first_of("#?", start);
+        }
         std::string str_port = str.substr(start, end_port - start);
         uint16_t port{ 0 };
         auto result = std::from_chars(str_port.c_str(), str_port.c_str() + str_port.size(), port);
@@ -43,6 +42,13 @@ namespace ParserUri
 
     size_t ParserPath::Parse(const std::string& str, size_t start)
     {
+        //Corner case, when path only consists of delimiter
+        if(str.substr(start).size() == delimiter_.size())
+        {
+            path_.emplace_back("");
+            return start + delimiter_.size();
+        }
+
         while (true)
         {
             auto end_path_part = str.find(delimiter_, start);

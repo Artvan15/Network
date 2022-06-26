@@ -5,13 +5,13 @@ set(Sources
 	src/ParserUri.cpp
 	src/ParserUrl.cpp
 	src/ParserUrn.cpp
-	src/ParserRelativePath.cpp)
+	src/ParserRelativeReference.cpp)
 
 set(Headers
 	include/ParserUri.hpp
 	include/ParserUrl.hpp
 	include/ParserUrn.hpp
-	include/ParserRelativePath.hpp
+	include/ParserRelativeReference.hpp
 	include/ParserException.hpp)
 
 add_library(${This} STATIC ${Sources} ${Headers})

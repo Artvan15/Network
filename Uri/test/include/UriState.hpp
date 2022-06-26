@@ -30,6 +30,13 @@ public:
 	uint16_t GetPortNumber() const { return final_port_.value(); }
 
     bool GetHasPort() const { return final_port_.has_value(); }
+
+    bool IsRelativeReference() const { return is_relative_reference; }
+    bool HasRelativePath() const { return has_relative_path; }
+
+    std::string GetFinalQuery() const { return final_query_; }
+    std::string GetFinalFragment() const { return final_fragment_; }
+
 private:
     UriState() = default;
 
@@ -41,6 +48,11 @@ private:
     std::string final_host_;
     std::optional<uint16_t> final_port_;
     std::vector<std::string> final_path_;
+    std::string final_query_;
+    std::string final_fragment_;
+
+    bool is_relative_reference = false;
+    bool has_relative_path = false;
 
     friend std::ostream& operator<<(std::ostream& os, const UriState& obj);
 };
@@ -68,11 +80,17 @@ public:
 
     Builder& SetFinalPortNumber(uint16_t final_port);
 
-    Builder& SetFinalHasPort(bool has_port);
-
     Builder& SetFinalPath(std::vector<std::string>&& final_path);
 
     Builder& SetInitialDelimiter(std::string&& initial_delimiter);
+
+    Builder& SetIsRelativeReference(bool flag);
+
+    Builder& SetHasRelativePath(bool flag);
+
+    Builder& SetFinalQuery(std::string&& final_query);
+
+    Builder& SetFinalFragment(std::string&& final_fragment);
 
     operator UriState();
 

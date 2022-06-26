@@ -3,7 +3,7 @@
 #include <optional>
 #include "ParserUrl.hpp"
 #include "ParserUrn.hpp"
-#include "ParserRelativePath.hpp"
+#include "ParserRelativeReference.hpp"
 
 namespace Uri
 {
@@ -23,15 +23,7 @@ namespace Uri
             }
             path.clear();
         }
-
-        size_t ParseScheme(const std::string& str);
-
-        size_t ParsePath(const std::string& str, size_t start_path_part);
-
-        size_t ParseHost(const std::string& str, size_t start_host);
-
-        bool ParsePortIfAny();
-        
+                
         /**
          * "scheme" of the URI
          */
@@ -54,11 +46,27 @@ namespace Uri
          * "path" of the URI, as a sequence of steps
          */
         std::vector<std::string> path;
-
+        
         /**
         * Delimiter for path
         */
         std::string delimiter = "/";
+
+        /**
+         * Query of the uri
+         *
+         * @note
+         *      Comes after '?'
+         */
+        std::string query;
+
+        /**
+         * Fragment of the uri
+         *
+         * @note
+         *      Comes after '#'
+         */
+        std::string fragment;
 
         /**
          * 
@@ -83,7 +91,7 @@ namespace Uri
         auto scheme_end = str.find(':', 0);
         if(scheme_end == std::string::npos)
         {
-            pImpl_->parser = std::make_unique<ParserUri::ParseRelativePath>(
+            pImpl_->parser = std::make_unique<ParserUri::ParseRelativeReference>(
                 pImpl_->path,
                 pImpl_->delimiter);
         }
@@ -103,6 +111,7 @@ namespace Uri
                 pImpl_->path,
                 pImpl_->delimiter);
         }
+        //TODO: Factory for creating Parser???
 
         pImpl_->parser->Parse(str, 0);
 
@@ -113,6 +122,12 @@ namespace Uri
     bool Uri::IsRelativeReference() const
     {
         return pImpl_->scheme.empty();
+    }
+
+    bool Uri::HasRelativePath() const
+    {
+        return (pImpl_->path.empty() ||
+            !pImpl_->path.front().empty()) ? true : false;
     }
 
 

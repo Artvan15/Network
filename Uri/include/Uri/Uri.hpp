@@ -98,9 +98,24 @@ namespace Uri
          *      a relative reference
          *
          * @note
-         *      URI is relative if 
+         *      URI is relative if Uri has no
+         *      scheme, host, port. Only path
          */
         bool IsRelativeReference() const;
+
+        /**
+         * Indicates whether Uri has relative
+         * path
+         *
+         * @return
+         *      Indication whether Uri has
+         *      a relative path
+         *
+         * @note
+         *      Path is relative when it
+         *      doesn't start with a delimiter
+         */
+        bool HasRelativePath() const;
 
         /**
          * Set delimiter for parsing path

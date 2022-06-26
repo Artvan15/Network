@@ -1,4 +1,5 @@
 #include "UriState.hpp"
+#include <iostream>
 
 UriState::Builder& ::UriState::Builder::SetInitialParsingString(std::string&& str)
 {
@@ -35,6 +36,30 @@ UriState::Builder& UriState::Builder::SetFinalPortNumber(uint16_t final_port)
 UriState::Builder& UriState::Builder::SetInitialDelimiter(std::string&& initial_delimiter)
 {
     uri_state_.initial_delimiter_ = std::move(initial_delimiter);
+    return *this;
+}
+
+UriState::Builder& UriState::Builder::SetIsRelativeReference(bool flag)
+{
+    uri_state_.is_relative_reference = flag;
+    return *this;
+}
+
+UriState::Builder& UriState::Builder::SetHasRelativePath(bool flag)
+{
+    uri_state_.has_relative_path = flag;
+    return *this;
+}
+
+UriState::Builder& UriState::Builder::SetFinalQuery(std::string&& final_query)
+{
+    uri_state_.final_query_ = std::move(final_query);
+    return *this;
+}
+
+UriState::Builder& UriState::Builder::SetFinalFragment(std::string&& final_fragment)
+{
+    uri_state_.final_fragment_ = std::move(final_fragment);
     return *this;
 }
 
