@@ -21,6 +21,8 @@ public:
 
 	std::string GetFinalScheme() const { return final_scheme_; }
 
+    std::string GetFinalUserInfo() const { return final_user_info_; }
+
 	std::string GetFinalHost() const { return final_host_; }
 
 	std::vector<std::string> GetFinalPath() const { return final_path_; }
@@ -35,7 +37,8 @@ public:
     bool HasRelativePath() const { return has_relative_path; }
 
     std::string GetFinalQuery() const { return final_query_; }
-    std::string GetFinalFragment() const { return final_fragment_; }
+
+	std::string GetFinalFragment() const { return final_fragment_; }
 
 private:
     UriState() = default;
@@ -45,6 +48,7 @@ private:
 
     std::string initial_delimiter_;
     std::string final_scheme_;
+    std::string final_user_info_;
     std::string final_host_;
     std::optional<uint16_t> final_port_;
     std::vector<std::string> final_path_;
@@ -75,6 +79,8 @@ public:
     Builder& SetInitialParsingString(std::string&& str);
 
     Builder& SetFinalScheme(std::string&& final_scheme);
+
+    Builder& SetFinalUserInfo(std::string&& user_info);
 
     Builder& SetFinalHost(std::string&& final_host);
 

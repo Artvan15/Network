@@ -13,6 +13,12 @@ UriState::Builder& ::UriState::Builder::SetInitialParsingString(std::string&& st
     return *this;
 }
 
+UriState::Builder& UriState::Builder::SetFinalUserInfo(std::string&& user_info)
+{
+    uri_state_.final_user_info_ = std::move(user_info);
+    return *this;
+}
+
 ::UriState::Builder& ::UriState::Builder::SetFinalHost(std::string&& final_host)
 {
     uri_state_.final_host_ = std::move(final_host);

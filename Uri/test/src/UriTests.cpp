@@ -58,43 +58,55 @@ TEST_P(UriParam, UriTests)
     }
     ASSERT_EQ(uri->GetPath(), uri_state.GetFinalPath());
     ASSERT_EQ(uri->IsRelativeReference(), uri_state.IsRelativeReference());
-    ASSERT_EQ(uri->HasRelativePath(), uri_state.HasRelativePath());    
+    ASSERT_EQ(uri->HasRelativePath(), uri_state.HasRelativePath());
+    ASSERT_EQ(uri->GetQuery(), uri_state.GetFinalQuery());
+    ASSERT_EQ(uri->GetFragment(), uri_state.GetFinalFragment());
 }
 
 /*
  * Generate parameters of UriState's class that will be used
  * in tests
  */
-INSTANTIATE_TEST_SUITE_P(UriWithAuthority, UriParam,
+INSTANTIATE_TEST_SUITE_P(UriWithAuthorityAndOrQueryFragment, UriParam,
     testing::Values(
         static_cast<UriState>(
             UriState::create()
-			.SetInitialParsingString("http://www.example.com/foo/bar")
+			.SetInitialParsingString("http://www.google.com/foo/bar")
 			.SetFinalScheme("http")
-			.SetFinalHost("www.example.com")
+			.SetFinalHost("www.google.com")
 			.SetFinalPath({"", "foo", "bar"})),
+        //path ends with a '/' and query starts
         static_cast<UriState>(
             UriState::create()
             .SetInitialParsingString("http://www.example.com/foo/bar/?query")
             .SetFinalScheme("http")
             .SetFinalHost("www.example.com")
             .SetFinalPath({"", "foo", "bar", ""})
-            .SetFinalQuery("foo")),
+            .SetFinalQuery("query")),
+        //fragment goes just after the host, without port, path, query
         static_cast<UriState>(
             UriState::create()
             .SetInitialParsingString("http://www.example.com#fragment")
             .SetFinalScheme("http")
             .SetFinalHost("www.example.com")
             .SetHasRelativePath(true)
-            .SetFinalFragment("bar")),
+            .SetFinalFragment("fragment")),
+        // '?' mark is in query part
         static_cast<UriState>(
             UriState::create()
-            .SetInitialParsingString("http://www.example.com/?query#fragment")
+            .SetInitialParsingString("http://www.example.com/?query?earth#fragment")
             .SetFinalScheme("http")
             .SetFinalHost("www.example.com")
             .SetFinalPath({""})
-            .SetFinalQuery("foo")
-            .SetFinalFragment("bar"))
+            .SetFinalQuery("query?earth")
+            .SetFinalFragment("fragment")),
+        //query and fragment are empty
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("http://www.prom.org/?")
+            .SetFinalScheme("http")
+            .SetFinalHost("www.prom.org")
+            .SetFinalPath({ "" }))
     )
 );
 
@@ -124,22 +136,60 @@ INSTANTIATE_TEST_SUITE_P(UriWithAuthorityWithPort, UriParam,
             .SetFinalHost("google.com.ua")
             .SetFinalPortNumber(8080)
             .SetFinalPath({ "", "settings", "account" })
+            .SetFinalQuery("query")
             ),
         static_cast<UriState>(
+            //without path, fragment goes after port
             UriState::create()
             .SetInitialParsingString("https://google.com.ua:8080#fragment")
             .SetFinalScheme("https")
             .SetFinalHost("google.com.ua")
             .SetFinalPortNumber(8080)
+            .SetHasRelativePath(true)
+            .SetFinalFragment("fragment")
             ),
         static_cast<UriState>(
+            //query and fragment go after port
             UriState::create()
             .SetInitialParsingString("https://google.com.ua:8080?query#fragment")
             .SetFinalScheme("https")
             .SetFinalHost("google.com.ua")
             .SetFinalPortNumber(8080)
+            .SetHasRelativePath(true)
+            .SetFinalQuery("query")
+            .SetFinalFragment("fragment")
             )
     )
+);
+
+INSTANTIATE_TEST_SUITE_P(UriWithoutSchemeWithAuthorityWithUserInfo, UriParam,
+    testing::Values(
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("//joe@google.com.ua:8080#fragment")
+            .SetFinalUserInfo("joe")
+            .SetFinalHost("google.com.ua")
+            .SetFinalPortNumber(8080)
+            .SetHasRelativePath(true)
+            .SetFinalFragment("fragment")
+            ),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("//joe:123@wikipedia.com")
+            .SetFinalUserInfo("joe:123")
+            .SetFinalHost("wikipedia.com")
+            .SetHasRelativePath(true)
+            ),
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("https://bob@google.com.ua:8000")
+            .SetFinalScheme("https")
+            .SetFinalUserInfo("bob")
+            .SetFinalHost("google.com.ua")
+            .SetFinalPortNumber(8000)
+            .SetHasRelativePath(true)
+            )
+        )
 );
 
 INSTANTIATE_TEST_SUITE_P(UriWithoutAuthority, UriParam,
@@ -230,9 +280,6 @@ INSTANTIATE_TEST_SUITE_P(UriRelativeReferenceAndPath, UriParam,
             )
     )
 );
-
-
-
 
 /*
  *Builder isn't convenient, cause user needs to use manual cast

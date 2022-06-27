@@ -1,7 +1,8 @@
 #include "Uri/Uri.hpp"
 #include <charconv>
 #include <optional>
-#include "ParserUrl.hpp"
+#include "ParserUrlWithScheme.hpp"
+#include "ParserUrlWithoutScheme.hpp"
 #include "ParserUrn.hpp"
 #include "ParserRelativeReference.hpp"
 
@@ -28,6 +29,14 @@ namespace Uri
          * "scheme" of the URI
          */
         std::string scheme;
+
+        /**
+         * "user info" of the URI
+         *
+         * @note
+         *      goes after possible scheme and ends with a '@' char
+         */
+        std::string user_info_;
 
         /**
          * "host" of the URI
@@ -86,10 +95,21 @@ namespace Uri
         if(str.empty())
         {
             return true;
-        }   
-
-        auto scheme_end = str.find(':', 0);
-        if(scheme_end == std::string::npos)
+        }
+         
+        if(str.size() > 1 && str.substr(0, 2) == "//")
+        {
+            pImpl_->parser = std::make_unique<ParserUri::ParserUrlWithoutScheme>(
+                pImpl_->user_info_,
+                pImpl_->host,
+                pImpl_->port,
+                pImpl_->path,
+                pImpl_->query,
+                pImpl_->fragment,
+                pImpl_->delimiter
+                );
+        }
+        else if(auto scheme_end = str.find(':', 0); scheme_end == std::string::npos)
         {
             pImpl_->parser = std::make_unique<ParserUri::ParseRelativeReference>(
                 pImpl_->path,
@@ -97,12 +117,16 @@ namespace Uri
         }
         else if(str.substr(scheme_end + 1, 2) == "//")
         {
-            pImpl_->parser = std::make_unique<ParserUri::ParserUrl>(
+            pImpl_->parser = std::make_unique<ParserUri::ParserUrlWithScheme>(
                 pImpl_->scheme,
+                pImpl_->user_info_,
                 pImpl_->host,
                 pImpl_->port,
                 pImpl_->path,
-                pImpl_->delimiter);
+                pImpl_->query,
+                pImpl_->fragment,
+                pImpl_->delimiter
+                );
         }
         else
         {
@@ -121,13 +145,18 @@ namespace Uri
     
     bool Uri::IsRelativeReference() const
     {
-        return pImpl_->scheme.empty();
+        return pImpl_->scheme.empty() && pImpl_->host.empty();
     }
 
     bool Uri::HasRelativePath() const
     {
         return (pImpl_->path.empty() ||
             !pImpl_->path.front().empty()) ? true : false;
+    }
+
+    std::string Uri::GetQuery() const
+    {
+        return pImpl_->query;
     }
 
 
@@ -156,6 +185,11 @@ namespace Uri
     std::vector<std::string> Uri::GetPath() const
     {
         return pImpl_->path;
+    }
+
+    std::string Uri::GetFragment() const
+    {
+        return pImpl_->fragment;
     }
 
     void Uri::SetDelimiter(const std::string& str)

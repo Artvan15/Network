@@ -43,6 +43,18 @@ namespace Uri
         std::string GetScheme() const;
 
         /**
+         * Returns "user info" parsed from string
+         *
+         * @return
+         *      The "user info" of the URI is returned
+         *
+         * @note
+         *      user_info goes after possible scheme and
+         *      ends with a '@' char
+         */
+        std::string GetUserInfo() const;
+
+        /**
          * This method returns the "host" element of the URI
          *
          * @return
@@ -117,6 +129,28 @@ namespace Uri
          */
         bool HasRelativePath() const;
 
+        /**
+         * Returns query of parsed from string
+         *
+         *  @return
+         *      Query of the Uri
+         *
+         *  @note
+         *      Query is part after '?' mark
+         */
+        std::string GetQuery() const;
+
+        /**
+         * Returns fragment parsed from string
+         *
+         * @return
+         *      Fragment of the Uri
+         *
+         * @note
+         *      Fragment is part after '#' mark
+         */
+        std::string GetFragment() const;
+             
         /**
          * Set delimiter for parsing path
          *

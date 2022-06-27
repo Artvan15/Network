@@ -59,7 +59,32 @@ namespace ParserUri
             }
             start = end_path_part + delimiter_.size();
         }
-        return 0; //TODO: in future will return end of path segment
+        return 1; //TODO: in future will return end of path segment
+    }
+
+    size_t ParserQuery::Parse(const std::string& str, size_t start)
+    {
+        auto end_query = str.find('#', start);
+        query_ = str.substr(start, end_query - start);
+        return end_query;
+    }
+
+    size_t ParserFragment::Parse(const std::string& str, size_t start)
+    {
+        fragment_ = str.substr(start);
+        return 1;
+        //TODO: should mark the end of the fragment
+    }
+
+    size_t ParserUserInfo::Parse(const std::string& str, size_t start)
+    {
+        auto end_user_info = str.find('@', start);
+        if (end_user_info != std::string::npos)
+        {
+            user_info_ = str.substr(start, end_user_info - start);
+            return end_user_info + 1;
+        }
+        return start;
     }
 
 }
