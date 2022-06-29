@@ -14,12 +14,105 @@ struct UriFixture : public testing::Test
 
 TEST_F(UriFixture, PortIsNotValid)
 {
-    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:afv/home"), ParserPortException);
-    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:8080ac/home"), ParserPortException);
-    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:65536/home"), ParserPortException);
-    ASSERT_THROW(uri->ParseFromString("http://google.com.ua:-5421/home"), ParserPortException);
+    const std::vector<std::string> parsing_strings{
+       "http://google.com.ua:afv/home",
+       "http://google.com.ua:8080ac/home",
+       "http://google.com.ua:65536/home",
+       "http://google.com.ua:-5421/home"
+    };
+
+    for(const auto& parsing_string : parsing_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(parsing_string), ParserPortException);
+
+    }
 
     //TODO: add checks for invalid URI
+}
+
+TEST_F(UriFixture, SchemeIsNotValid)
+{
+    const std::vector<std::string> parsing_strings{
+        "://www.example.com",
+        "2://www.example.com",
+        "+://www.example.com",
+        "@://www.example.com",
+        ".://www.example.com",
+        "h@://www.example.com"
+    };
+
+    for(const auto& parsing_string : parsing_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(parsing_string), ParserSchemeException);
+    }
+}
+
+
+TEST_F(UriFixture, UriWithSchemeBarelyLegal)
+{
+	struct TestVector
+	{
+        std::string uriString;
+        std::string scheme;
+	};
+
+    const std::vector<TestVector> test_vectors{
+        {"h://www.olx.ua", "h"},
+        {"x+://www.olx.ua", "x+"},
+        {"y-://www.prom.ua", "y-"},
+        {"z.://www.youtube.com", "z."},
+        {"aa://spotify.com", "aa"},
+        {"a0://github.com", "a0"}
+    };
+
+    for(const auto& vector : test_vectors)
+    {
+        ASSERT_NO_THROW(uri->ParseFromString(vector.uriString));
+        ASSERT_EQ(uri->GetScheme(), vector.scheme);
+    }
+}
+
+
+//TODO: implement UserInfo validation
+TEST_F(UriFixture, UserInfoIsNotValid)
+{
+    const std::vector<std::string> parsing_strings{
+        "//%X@www.google.com",
+        "//{@google.com",
+        "//fa#@google.com",
+        "//]@google.com"
+    };
+
+    for (const auto& parsing_string : parsing_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(parsing_string), ParserUserInfoException) << "Parsing string: " << parsing_string;
+    }
+}
+
+TEST_F(UriFixture, UserInfoBarelyLegal)
+{
+	struct TestVector
+	{
+        std::string uri_string;
+        std::string user_info;
+	};
+
+    const std::vector<TestVector> test_vectors{
+        {"//joe%26%41@djini.com.ua", "joe&A"},
+        {"//%41@djini.com.ua", "A"},
+        {"//@djini.com.ua", ""},
+        {"//!@djini.com.ua", "!"},
+        {"//'@djini.com.ua", "'"},
+        {"//(@djini.com.ua", "("},
+		{"//;@djini.com.ua", ";"},
+		{"//:@djini.com.ua", ":"}
+    };
+
+    for(const auto& test_vector : test_vectors)
+    {
+        ASSERT_NO_THROW(uri->ParseFromString(test_vector.uri_string)) << test_vector.uri_string;
+        ASSERT_EQ(uri->GetUserInfo(), test_vector.user_info);
+    }
 }
 
 
@@ -49,6 +142,7 @@ TEST_P(UriParam, UriTests)
 
     ASSERT_TRUE(uri->ParseFromString(uri_state.GetInitialParsingString()));
     ASSERT_EQ(uri->GetScheme(), uri_state.GetFinalScheme());
+    ASSERT_EQ(uri->GetUserInfo(), uri_state.GetFinalUserInfo());
     ASSERT_EQ(uri->GetHost(), uri_state.GetFinalHost());
     ASSERT_EQ(uri->HasPort(), uri_state.GetHasPort());
 
@@ -62,6 +156,7 @@ TEST_P(UriParam, UriTests)
     ASSERT_EQ(uri->GetQuery(), uri_state.GetFinalQuery());
     ASSERT_EQ(uri->GetFragment(), uri_state.GetFinalFragment());
 }
+
 
 /*
  * Generate parameters of UriState's class that will be used
@@ -280,6 +375,7 @@ INSTANTIATE_TEST_SUITE_P(UriRelativeReferenceAndPath, UriParam,
             )
     )
 );
+
 
 /*
  *Builder isn't convenient, cause user needs to use manual cast

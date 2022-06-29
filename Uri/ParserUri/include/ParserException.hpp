@@ -11,3 +11,13 @@ struct ParserPortException : public ParserException
 {
 	using ParserException::ParserException;
 };
+
+struct ParserSchemeException : public ParserException
+{
+	using ParserException::ParserException;
+};
+
+struct ParserUserInfoException : public ParserException
+{
+	using ParserException::ParserException;
+};

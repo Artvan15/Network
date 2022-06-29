@@ -4,10 +4,19 @@
 
 namespace ParserUri
 {
+    ParserScheme::ParserScheme(std::string& scheme) noexcept
+        : scheme_(scheme), scheme_regex_("[a-zA-Z]([a-zA-Z0-9+-\\.])*")
+    {}
+
     size_t ParserScheme::Parse(const std::string& str, size_t start)
     {
         auto scheme_end = str.find(':', start);
-        scheme_ = str.substr(start, scheme_end);
+        std::string temp_scheme = str.substr(start, scheme_end);
+        if(!std::regex_match(temp_scheme, scheme_regex_))
+        {
+            throw ParserSchemeException("scheme isn't valid");
+        }
+        scheme_ = std::move(temp_scheme);
         return scheme_end;
     }
 
@@ -76,12 +85,38 @@ namespace ParserUri
         //TODO: should mark the end of the fragment
     }
 
+    ParserUserInfo::ParserUserInfo(std::string& user_info) noexcept
+        : user_info_(user_info), user_info_regex_("([\\w%-.~!$&'()*+,;=:])*")
+    {}
+
     size_t ParserUserInfo::Parse(const std::string& str, size_t start)
     {
         auto end_user_info = str.find('@', start);
         if (end_user_info != std::string::npos)
         {
-            user_info_ = str.substr(start, end_user_info - start);
+            std::string temp_user_info = str.substr(start, end_user_info - start);
+            if(!std::regex_match(temp_user_info, user_info_regex_))
+            {
+                throw ParserUserInfoException("inaccessible character(s) in user_info");
+            }
+
+            for(size_t hex_delimiter = temp_user_info.find('%', 0); hex_delimiter != std::string::npos;
+                hex_delimiter = temp_user_info.find('%', hex_delimiter + 1))
+            {
+                std::string hex_string = temp_user_info.substr(hex_delimiter + 1, 2);
+                unsigned char char_from_hex = '\0';
+            	try
+                {
+                    char_from_hex = std::stoul(hex_string, nullptr, 16);
+                }
+                catch(const std::exception& ex)
+                {
+                    throw ParserUserInfoException("hex in user_info is ill-formed");
+                }
+                temp_user_info.replace(hex_delimiter, 3, 1, char_from_hex);
+            }
+
+            user_info_ = std::move(temp_user_info);
             return end_user_info + 1;
         }
         return start;

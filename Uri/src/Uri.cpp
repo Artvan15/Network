@@ -23,6 +23,9 @@ namespace Uri
                 port = std::nullopt;
             }
             path.clear();
+            user_info_.clear();
+            query.clear();
+            fragment.clear();
         }
                 
         /**
@@ -164,6 +167,12 @@ namespace Uri
     {
         return pImpl_->scheme;
     }
+
+    std::string Uri::GetUserInfo() const
+    {
+        return pImpl_->user_info_;
+    }
+
 
     std::string Uri::GetHost() const
     {

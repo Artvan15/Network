@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <regex>
 
 namespace ParserUri
 {
@@ -15,24 +16,24 @@ namespace ParserUri
 	class ParserScheme : public IParser
 	{
 	public:
-		ParserScheme(std::string& scheme) noexcept
-			: scheme_(scheme) {}
+		ParserScheme(std::string& scheme) noexcept;
 		size_t Parse(const std::string& str, size_t start) override;
 
 	protected:
 		std::string& scheme_;
+		std::regex scheme_regex_;
 	};
 
 	class ParserUserInfo : public IParser
 	{
 	public:
-		ParserUserInfo(std::string& user_info) noexcept
-			: user_info_(user_info) {}
+		ParserUserInfo(std::string& user_info) noexcept;
 
 		size_t Parse(const std::string& str, size_t start) override;
 
 	protected:
 		std::string& user_info_;
+		std::regex user_info_regex_;
 	};
 
 	class ParserHost : public IParser
