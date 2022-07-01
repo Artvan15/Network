@@ -1,6 +1,8 @@
 #ifndef PARSER_URN
 #define PARSER_URN
-#include "ParserUri.hpp"
+
+#include "ParserScheme.hpp"
+#include "ParserPath.hpp"
 
 namespace ParserUri
 {

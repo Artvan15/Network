@@ -1,6 +1,7 @@
 #ifndef PARSER_RELATIVE_PATH
 #define PARSER_RELATIVE_PATH
-#include "ParserUri.hpp"
+
+#include "ParserPath.hpp"
 
 namespace ParserUri
 {

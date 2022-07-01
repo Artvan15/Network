@@ -2,6 +2,7 @@
 #define PARSER_URL_WITH_SCHEME
 
 #include "ParserUrl.hpp"
+#include "ParserScheme.hpp"
 
 namespace ParserUri
 {

@@ -1,6 +1,7 @@
 #include "Uri/Uri.hpp"
 #include <charconv>
 #include <optional>
+
 #include "ParserUrlWithScheme.hpp"
 #include "ParserUrlWithoutScheme.hpp"
 #include "ParserUrn.hpp"
@@ -112,7 +113,7 @@ namespace Uri
                 pImpl_->delimiter
                 );
         }
-        else if(auto scheme_end = str.find(':', 0); scheme_end == std::string::npos)
+        else if(const auto scheme_end = str.find(':', 0); scheme_end == std::string::npos)
         {
             pImpl_->parser = std::make_unique<ParserUri::ParseRelativeReference>(
                 pImpl_->path,

@@ -1,7 +1,12 @@
 #ifndef PARSER_URI
 #define PARSER_URI
 
-#include "ParserUri.hpp"
+#include "ParserUserInfo.hpp"
+#include "ParserHost.hpp"
+#include "ParserPort.hpp"
+#include "ParserPath.hpp"
+#include "ParserQuery.hpp"
+#include "ParserFragment.hpp"
 
 namespace ParserUri
 {
