@@ -37,7 +37,7 @@ namespace ParserUri
             else
             {
                 CheckRegName(temp_host);
-                ReplaceHexWithChar::Replace(temp_host, ParserHostException("invalid hex code"));
+                ReplaceHexWithChar::Replace(temp_host, ParserHostException("invalid hex code in host"));
             }
         }
 
@@ -57,7 +57,7 @@ namespace ParserUri
                 }
             
         }
-        //IPv6
+        //TODO: IPv6 check
         else
         {
 	        
@@ -65,6 +65,7 @@ namespace ParserUri
 
     }
 
+    //TODO: IPv4 check
     void ParserHost::CheckIPv4(const std::string& temp_host)
     {
 	    

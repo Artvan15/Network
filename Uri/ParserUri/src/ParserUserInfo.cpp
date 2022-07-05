@@ -17,7 +17,7 @@ namespace ParserUri
             {
                 throw ParserUserInfoException("inaccessible character(s) in user_info");
             }
-            ReplaceHexWithChar::Replace(temp_user_info, ParserUserInfoException("invalid hex code"));
+            ReplaceHexWithChar::Replace(temp_user_info, ParserUserInfoException("invalid hex code in user_info"));
             user_info_ = std::move(temp_user_info);
             return end_user_info + 1;
         }

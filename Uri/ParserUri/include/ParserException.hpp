@@ -5,7 +5,7 @@ template<typename Derived>
 struct ParserException : public std::runtime_error
 {
 	explicit ParserException(const std::string& str)
-		: runtime_error(str) {}
+		: runtime_error(str) {} 
 
 	const Derived& CastToDerived() const
 	{
@@ -29,6 +29,21 @@ struct ParserUserInfoException : public ParserException<ParserUserInfoException>
 };
 
 struct ParserHostException : public ParserException<ParserHostException>
+{
+	using ParserException::ParserException;
+};
+
+struct ParserPathException : public ParserException<ParserPathException>
+{
+	using ParserException::ParserException;
+};
+
+struct ParserQueryException : public ParserException<ParserQueryException>
+{
+	using ParserException::ParserException;
+};
+
+struct ParserFragmentException : public ParserException<ParserFragmentException>
 {
 	using ParserException::ParserException;
 };

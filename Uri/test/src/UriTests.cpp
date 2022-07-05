@@ -29,7 +29,7 @@ TEST_F(UriFixture, PortIsNotValid)
     //TODO: add checks for invalid URI
 }
 
-TEST_F(UriFixture, SchemeIsNotValid)
+TEST_F(UriFixture, SchemeIllegalCharacters)
 {
     const std::vector<std::string> parsing_strings{
         "://www.example.com",
@@ -47,7 +47,7 @@ TEST_F(UriFixture, SchemeIsNotValid)
 }
 
 
-TEST_F(UriFixture, UriWithSchemeBarelyLegal)
+TEST_F(UriFixture, SchemeBarelyLegal)
 {
 	struct TestVector
 	{
@@ -72,7 +72,7 @@ TEST_F(UriFixture, UriWithSchemeBarelyLegal)
 }
 
 
-TEST_F(UriFixture, UserInfoIsNotValid)
+TEST_F(UriFixture, UserInfoIllegalCharacters)
 {
     const std::vector<std::string> parsing_strings{
         //invalid hex code cast to char
@@ -171,6 +171,149 @@ TEST_F(UriFixture, HostBarelyLegal)
         ASSERT_EQ(uri->GetHost(), test_vector.host);
     }
 }
+
+TEST_F(UriFixture, PathIllegalCharacters)
+{
+    const std::vector<std::string> test_strings
+    {
+        "http://www.google.com/foo[bar",
+        "http://google/[bar",
+        "http://google/bar}",
+        "http://google/[",
+        "bar/foo}",
+        "/bar/[",
+        "/bar]/foo",
+        "[/bar",
+        "bar{/",
+        "/[",
+        "http://www.google.com/foo bar"
+    };
+    for(const auto& test_string : test_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(test_string), ParserPathException);
+    }
+}
+
+TEST_F(UriFixture, PathBarelyLegal)
+{
+	struct TestVector
+	{
+        std::string uri_string;
+        std::vector<std::string> path;
+	};
+
+    const std::vector<TestVector> test_vectors
+    {
+        {"/:/foo", {"", ":", "foo"}},
+        {"bob@/foo", {"bob@", "foo"}},
+        {"hello!", {"hello!"}},
+        {"urn:hello,%20w%6Frld!", {"hello, world!"}},
+        {"//example.com/foo/(bar)/", {"", "foo", "(bar)", ""}}
+    };
+
+    for(const auto& test_vector : test_vectors)
+    {
+        ASSERT_NO_THROW(uri->ParseFromString(test_vector.uri_string)) <<
+            "Parsing string: " << test_vector.uri_string;
+        ASSERT_EQ(uri->GetPath(), test_vector.path);
+    } 
+}
+
+TEST_F(UriFixture, QueryIllegalCharacters)
+{
+    const std::vector<std::string> test_strings
+    {
+        "http://www.google.com?foo[bar",
+        "http://google/?[bar",
+        "http://google?bar}",
+        "http://google/?[",
+        "/bar/foo?}",
+        "/bar/?[",
+        "/bar?]/foo",
+        "/?[",
+        "http://www.google.com?foo bar"
+    };
+    for (const auto& test_string : test_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(test_string), ParserQueryException) << test_string;
+    }
+}
+
+TEST_F(UriFixture, QueryBarelyLegal)
+{
+    struct TestVector
+    {
+        std::string uri_string;
+        std::string query;
+    };
+
+    const std::vector<TestVector> test_vectors
+    {
+        {"/?:/foo", ":/foo"},
+        {"/?bob@/foo", "bob@/foo"},
+        {"/?hello!", "hello!"},
+        {"urn:?hello,%20w%6Frld!", "hello, world!"},
+        {"//example.com/foo?(bar)/", "(bar)/"},
+        {"//example.com/foo?bar?/", "bar?/"}
+
+    };
+
+    for (const auto& test_vector : test_vectors)
+    {
+        ASSERT_NO_THROW(uri->ParseFromString(test_vector.uri_string)) <<
+            "Parsing string: " << test_vector.uri_string;
+        ASSERT_EQ(uri->GetQuery(), test_vector.query);
+    }
+}
+
+
+TEST_F(UriFixture, FragmentIllegalCharacters)
+{
+    const std::vector<std::string> test_strings
+    {
+        "http://www.google.com#foo[bar",
+        "http://google/#[bar",
+        "http://google#bar}",
+        "http://google/#[",
+        "/bar/foo#}",
+        "/bar/#[",
+        "/bar#]/foo",
+        "/#[",
+        "http://www.google.com#foo bar"
+    };
+    for (const auto& test_string : test_strings)
+    {
+        ASSERT_THROW(uri->ParseFromString(test_string), ParserFragmentException) << test_string;
+    }
+}
+
+TEST_F(UriFixture, FragmentBarelyLegal)
+{
+    struct TestVector
+    {
+        std::string uri_string;
+        std::string fragment;
+    };
+
+    const std::vector<TestVector> test_vectors
+    {
+        {"/#:/foo", ":/foo"},
+        {"/#bob@/foo", "bob@/foo"},
+        {"/#hello!", "hello!"},
+        {"urn:#hello,%20w%6Frld!", "hello, world!"},
+        {"//example.com/foo#(bar)/", "(bar)/"},
+        {"//example.com/foo#bar?/", "bar?/"}
+
+    };
+
+    for (const auto& test_vector : test_vectors)
+    {
+        ASSERT_NO_THROW(uri->ParseFromString(test_vector.uri_string)) <<
+            "Parsing string: " << test_vector.uri_string;
+        ASSERT_EQ(uri->GetFragment(), test_vector.fragment);
+    }
+}
+
 
 
 /*
@@ -356,7 +499,7 @@ INSTANTIATE_TEST_SUITE_P(UriWithMultipleColonCharacter, UriParam,
             UriState::create()
             .SetInitialParsingString("//google.com/a:b")
             .SetFinalHost("google.com")
-            .SetFinalPath({"", "a:b"})
+            .SetFinalPath({ "", "a:b" })
             ),
         static_cast<UriState>(
             UriState::create()
@@ -378,9 +521,26 @@ INSTANTIATE_TEST_SUITE_P(UriWithMultipleColonCharacter, UriParam,
             .SetFinalScheme("http")
             .SetFinalHost("google.com")
             .SetFinalPortNumber(8080)
-            .SetFinalPath({"", "pa:th"})
+            .SetFinalPath({ "", "pa:th" })
             .SetFinalQuery("u:a")
             .SetFinalFragment("a:b")
+            ),
+        
+        //interpreted as  relative reference, first part can hold ':' character, because starts with '/'
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("/path:1/path:2")
+            .SetFinalPath({ "", "path:1", "path:2" })
+            .SetIsRelativeReference(true)
+            ),
+
+        //interpreted as urn, because first segment has ':' and doesn't start with a '/'
+        static_cast<UriState>(
+            UriState::create()
+            .SetInitialParsingString("path:1/path:2")
+            .SetFinalScheme("path")
+            .SetFinalPath({ "1", "path:2" })
+            .SetHasRelativePath(true)
             )
     )
 );

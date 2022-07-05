@@ -53,7 +53,7 @@ namespace ParserUri
 			//in this case 'end_path' is end of query
 			end_path = end_query;
 		}
-		parser_fragment_.Parse(str, end_path + 1);;
+		parser_fragment_.Parse(str, end_path + 1);
 		return 1;
 
 	}

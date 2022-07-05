@@ -113,13 +113,8 @@ namespace Uri
                 pImpl_->delimiter
                 );
         }
-        else if(const auto scheme_end = str.find(':', 0); scheme_end == std::string::npos)
-        {
-            pImpl_->parser = std::make_unique<ParserUri::ParseRelativeReference>(
-                pImpl_->path,
-                pImpl_->delimiter);
-        }
-        else if(str.substr(scheme_end + 1, 2) == "//")
+        else if (const auto colon = str.find(':', 0); 
+            colon != std::string::npos && str.substr(colon + 1, 2) == "//")
         {
             pImpl_->parser = std::make_unique<ParserUri::ParserUrlWithScheme>(
                 pImpl_->scheme,
@@ -132,11 +127,24 @@ namespace Uri
                 pImpl_->delimiter
                 );
         }
+        //RelativeReference has path, first segment of which can't hold ':'
+        else if(const auto first_segment_start = str.find(pImpl_->delimiter); 
+            first_segment_start < colon || (first_segment_start == std::string::npos && colon == std::string::npos))
+        {
+            pImpl_->parser = std::make_unique<ParserUri::ParseRelativeReference>(
+                pImpl_->path,
+                pImpl_->query,
+                pImpl_->fragment,
+                pImpl_->delimiter);
+        }
+        
         else
         {
             pImpl_->parser = std::make_unique<ParserUri::ParserUrn>(
                 pImpl_->scheme,
                 pImpl_->path,
+                pImpl_->query,
+                pImpl_->fragment,
                 pImpl_->delimiter);
         }
         //TODO: Factory for creating Parser???
